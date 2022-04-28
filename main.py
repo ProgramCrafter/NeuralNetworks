@@ -14,9 +14,14 @@ from image_logger import ImageLogger
 from activators import TanhActivator
 from utils import catch_nan
 
+weights = [0.348, -0.096, 1.191, 0.723,
+  0.374,-0.911,-0.584,-0.292,  0.271,0.878,-1.362,-0.736,  0.488,-0.007,0.825,0.967,
+  -0.578,0.995,0.896
+].__iter__()
+
 class InitialWeightsGenerator:
   def generate(self, iterable):
-    return [random.random() * 2 - 1 for it in iterable]
+    return [(random.random() * 2 - 1) * 0 + weights.__next__() for it in iterable]
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
