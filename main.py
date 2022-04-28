@@ -223,7 +223,7 @@ def main():
     last_distance = epoch(net, data)
     
     try:
-      for i in range(4401):
+      for i in range(50001):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
