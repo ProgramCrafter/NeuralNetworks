@@ -3,79 +3,20 @@ import itertools
 import cProfile
 import random
 import math
-import png
 
 TRAIN_SPEED = 8e-5
 TRAIN_LIMIT = 20
 TRAIN_BLIMIT = 7e-3
 COEF_LIMIT = 9999
 
-LReLU_COEF_0 = 0.07
-LReLU_COEF_1 = 0.85
-
-assert(LReLU_COEF_0 <= LReLU_COEF_1)
-
-def catch_nan(f):
-  if True:
-    return f
-  
-  def inner(*a, **k):
-    r = f(*a, **k)
-    
-    if r != r:
-      raise Exception('%s returned NaN' % f.__qualname__)
-    return r
-  
-  inner.__name__ = f.__name__
-  inner.__qualname__ = f.__qualname__
-  
-  return inner
+from data_source import HsvDataExtractor
+from image_logger import ImageLogger
+from activators import TanhActivator
+from utils import catch_nan
 
 class InitialWeightsGenerator:
   def generate(self, iterable):
     return [random.random() * 2 - 1 for it in iterable]
-
-class IActivator:
-  def result(self, v):     pass
-  def derivative(self, v): pass
-  def __str__(self):       pass
-
-class LReLUActivator(IActivator):
-  @catch_nan
-  def result(self, v):
-    return max(v * LReLU_COEF_0, v * LReLU_COEF_1)
-  
-  @catch_nan
-  def derivative(self, v):
-    return LReLU_COEF_0 if v < 0 else LReLU_COEF_1
-  
-  def __str__(self):
-    return '[LReLU:%.2f:%.2f]\n' % (LReLU_COEF_0, LReLU_COEF_1)
-
-class SigmoidActivator(IActivator):
-  def result(self, v):
-    return 1 / (1 + math.exp(-v))
-  
-  def derivative(self, v):
-    w = 1 / (1 + math.exp(-v))
-    return w * (1 - w)
-  
-  def __str__(self):
-    return '[Sigmoid]\n'
-
-class TanhActivator(IActivator):
-  def result(self, v):
-    a = math.exp(v)
-    b = math.exp(-v)
-    return (a - b) / (a + b)
-  
-  def derivative(self, v):
-    a = math.exp(v)
-    b = math.exp(-v)
-    return 1 - (a - b) / (a + b) * (a - b) / (a + b)
-  
-  def __str__(self):
-    return '[tanh]\n'
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
@@ -108,8 +49,7 @@ class InputValue(INeuron):
   @catch_nan
   def delta_as_not_last(self, next_deltas, self_index):
     s = self.coef * self.value
-    # d = self.activator.derivative(s)
-    d = LReLU_COEF_0 if s < 0 else LReLU_COEF_1 # had to boost this
+    d = self.activator.derivative(s)
     
     mult = 0
     for i, neuron in enumerate(self.next_layer):
@@ -159,8 +99,7 @@ class Neuron(INeuron):
   def delta_as_last(self, error):
     s = sum(self.coefs[i] * v.calculate() for i, v in enumerate(self.previous_layer))
     
-    # d = self.activator.derivative(s)
-    d = LReLU_COEF_0 if s < 0 else LReLU_COEF_1 # had to boost this
+    d = self.activator.derivative(s)
     
     return d * error
   
@@ -168,8 +107,7 @@ class Neuron(INeuron):
   def delta_as_not_last(self, next_deltas, self_index):
     s = sum(self.coefs[i] * v.calculate() for i, v in enumerate(self.previous_layer))
     
-    # d = self.activator.derivative(s)
-    d = LReLU_COEF_0 if s < 0 else LReLU_COEF_1 # had to boost this
+    d = self.activator.derivative(s)
     
     mult = 0
     for i, neuron in enumerate(self.next_layer):
@@ -252,63 +190,6 @@ class NeuralNetwork:
     
     for layer in self.layers[:-1][::-1]:
       deltas = [neuron.delta(deltas, i) for i, neuron in enumerate(layer)]
-
-class IDataSource:
-  def __init__(self, path):     pass
-  def extract_data(self, case): pass
-  def wanted(self, case):       pass
-  def cases(self):              pass
-
-class HsvDataExtractor(IDataSource):
-  CASES = 120
-  
-  def __init__(self, path):
-    mtx = png.Reader(path).read()[2]
-    self.image = [list(row) for row in mtx]
-    
-    k = 0.7
-    self.angles = [case * (360 // self.CASES) * math.pi / 180
-      for case in range(self.cases())]
-    self.row_refs = [self.image[int(256 * (math.sin(-angle) * k + 1))]
-      for angle in self.angles]
-    self.x_cache = [int(256 * (math.cos(-angle) * k + 1)) * 3
-      for angle in self.angles]
-  
-  def extract_data(self, case):
-    # angle = case * (360 // self.CASES) * math.pi / 180
-    # x = int(256 * (math.cos(-angle) * k + 1))
-    # y = int(256 * (math.sin(-angle) * k + 1))
-    
-    # return (*[v/256 for v in self.image[y][x*3:x*3+3]], 1)
-    
-    x = self.x_cache[case]
-    return [v / 256 for v in self.row_refs[case][x:x+3]] + [1]
-  
-  def wanted(self, case):
-    return [case / 120]
-  
-  def cases(self):
-    return 120
-
-class ImageLogger:
-  def __init__(self, path):
-    mtx = png.Reader(path).read()[2]
-    self.image = [list(row) for row in mtx]
-  
-  def add_mark(self, angle, brightness):
-    k = 0.7
-    x = int(256 * (math.cos(-angle) * k + 1))
-    y = int(256 * (math.sin(-angle) * k + 1))
-    
-    self.image[y-1][x*3:x*3+3] = [brightness] * 3
-    self.image[y+1][x*3:x*3+3] = [brightness] * 3
-    self.image[y][x*3-3:x*3+6] = [brightness] * 9
-  
-  def save(self, path):
-    with open(path, 'wb') as f:
-      png.Writer(512, 512, greyscale=False).write(
-        f, self.image
-      )
 
 def epoch(net, data):
   sum_sq = 0
