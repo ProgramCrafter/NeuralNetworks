@@ -9,19 +9,13 @@ TRAIN_LIMIT = 20
 TRAIN_BLIMIT = 7e-3
 COEF_LIMIT = 9999
 
-from data_source import HsvDataExtractor
+from data_source import XORDataSource
 from activators import TanhActivator
-from image_logger import ImageLogger
 from utils import catch_nan
-
-weights = [0.586, -0.246, 1.466, 0.744,
-0.564,-1.168,-0.691,-0.396, 0.567,0.779,-1.731,-0.889, 0.517,-0.290,0.860,0.817,
--0.869,1.093,0.898, 0.2,0.5,0.8
-].__iter__()
 
 class InitialWeightsGenerator:
   def generate(self, iterable):
-    return [(random.random() * 2 - 1) * 0 + weights.__next__() for it in iterable]
+    return [random.random() * 2 - 1 for it in iterable]
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
@@ -220,15 +214,14 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 4, [3, 2])
-    data = HsvDataExtractor(__file__ + '/../hsv.png')
-    logger = ImageLogger(__file__ + '/../hsv.png')
+    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 2, [2, 1])
+    data = XORDataSource()
     
     print(net, data)
     last_distance = epoch(net, data)
     
     try:
-      for i in range(250001):
+      for i in range(500001):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
@@ -245,7 +238,6 @@ def main():
     print('\nResults:')
     
     sum_distance = 0
-    sum_angle = 0
     d = []
     for case in range(data.cases()):
       net.set_inputs(data.extract_data(case))
@@ -257,23 +249,9 @@ def main():
       for i, nr in enumerate(net_result):
         sum_distance += (nr - wanted_result[i]) ** 2
       
-      logger.add_mark(net_result[0] * 2 * math.pi, (case * 256) // data.cases())
-      sum_angle += abs(net_result[0] - wanted_result[0])
-      
-      wr = wanted_result[0] * 360
-      nr = net_result[0] * 360
-      d.append(int(abs(wr - nr)))
-      print('%d:%d (%d)' % (wr, nr, abs(wr - nr)), end='\t')
-      if (case + 1) % 7 == 0: print()
-    
-    d.sort()
-    print('\n\nDistances array:')
-    for chunk in range(0, len(d), 30): print(*d[chunk:chunk+30])
-    
-    logger.save(__file__ + '/../nn-output.png')
+      print('%d: %d vs %.3f' % (case, wanted_result[0], net_result[0]))
     
     print('\nMedian distance: %.4f' % (sum_distance / data.cases()))
-    print('Median angle: %.4f' % (sum_angle / data.cases() * 360))
     
     print('\nWeights:')
     print(net.sprintf_weights())
