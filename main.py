@@ -10,13 +10,13 @@ TRAIN_BLIMIT = 7e-3
 COEF_LIMIT = 9999
 
 from data_source import HsvDataExtractor
-from image_logger import ImageLogger
 from activators import TanhActivator
+from image_logger import ImageLogger
 from utils import catch_nan
 
-weights = [0.348, -0.096, 1.191, 0.723,
-  0.374,-0.911,-0.584,-0.292,  0.271,0.878,-1.362,-0.736,  0.488,-0.007,0.825,0.967,
-  -0.578,0.995,0.896
+weights = [0.586, -0.246, 1.466, 0.744,
+0.564,-1.168,-0.691,-0.396, 0.567,0.779,-1.731,-0.889, 0.517,-0.290,0.860,0.817,
+-0.869,1.093,0.898
 ].__iter__()
 
 class InitialWeightsGenerator:
@@ -228,7 +228,7 @@ def main():
     last_distance = epoch(net, data)
     
     try:
-      for i in range(50001):
+      for i in range(250001):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
