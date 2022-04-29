@@ -16,7 +16,7 @@ from utils import catch_nan
 
 weights = [0.586, -0.246, 1.466, 0.744,
 0.564,-1.168,-0.691,-0.396, 0.567,0.779,-1.731,-0.889, 0.517,-0.290,0.860,0.817,
--0.869,1.093,0.898
+-0.869,1.093,0.898, 0.2,0.5,0.8
 ].__iter__()
 
 class InitialWeightsGenerator:
@@ -220,7 +220,7 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 4, [3, 1])
+    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 4, [3, 2])
     data = HsvDataExtractor(__file__ + '/../hsv.png')
     logger = ImageLogger(__file__ + '/../hsv.png')
     
