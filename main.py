@@ -13,9 +13,13 @@ from data_source import CFProblemTimingsDataSource
 from activators import TanhActivator
 from utils import catch_nan
 
+weights = [15.079,
+3.455,  2.020,
+3.329,1.941].__iter__()
+
 class InitialWeightsGenerator:
   def generate(self, iterable):
-    return [random.random() * 2 - 1 for it in iterable]
+    return [(random.random() * 2 - 1) * 0 + weights.__next__() for it in iterable]
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
@@ -221,7 +225,7 @@ def main():
     last_distance = epoch(net, data)
     
     try:
-      for i in range(500001):
+      for i in range(25001):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
