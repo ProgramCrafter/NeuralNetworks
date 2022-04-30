@@ -9,17 +9,13 @@ TRAIN_LIMIT = 20
 TRAIN_BLIMIT = 7e-3
 COEF_LIMIT = 9999
 
-from data_source import XORDataSource
+from data_source import CFProblemTimingsDataSource
 from activators import TanhActivator
 from utils import catch_nan
 
-weights = [1.650,  1.615,
-0.588,0.598,  -2.441,-2.532,
--2.565,-2.089].__iter__()
-
 class InitialWeightsGenerator:
   def generate(self, iterable):
-    return [(random.random() * 2 - 1) * 0 + weights.__next__() for it in iterable]
+    return [random.random() * 2 - 1 for it in iterable]
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
@@ -218,8 +214,8 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 2, [2, 1])
-    data = XORDataSource()
+    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 1, [2, 1])
+    data = CFProblemTimingsDataSource(__file__ + '/../cf-submissions.json')
     
     print(net, data)
     last_distance = epoch(net, data)
@@ -232,7 +228,7 @@ def main():
           print('Epoch %6d - square distance = %.4f (delta = %.4f)' % (i, cur_distance, cur_distance - last_distance))
           last_distance = min(last_distance, cur_distance)
         
-        if cur_distance < 0.005:
+        if cur_distance < 0.002:
           break
     except KeyboardInterrupt:
       pass
@@ -253,7 +249,8 @@ def main():
       for i, nr in enumerate(net_result):
         sum_distance += (nr - wanted_result[i]) ** 2
       
-      print('%d: %d vs %.3f' % (case, wanted_result[0], net_result[0]))
+      print('#%3d: %d vs %d' % (case, 500 / wanted_result[0], 500 / net_result[0]), end='\t ')
+      if (case + 1) % 4 == 0: print()
     
     print('\nMedian distance: %.4f' % (sum_distance / data.cases()))
     
