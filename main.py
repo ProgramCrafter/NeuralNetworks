@@ -14,9 +14,9 @@ from activators import TanhActivator
 from image_logger import ImageLogger
 from utils import catch_nan
 
-weights = [0.586, -0.246, 1.466, 0.744,
-0.564,-1.168,-0.691,-0.396, 0.567,0.779,-1.731,-0.889, 0.517,-0.290,0.860,0.817,
--0.869,1.093,0.898, 0.2,0.5,0.8
+weights = [0.586, -0.246, 1.466, 0.1, 0.2, 0.3, 0.744,
+0.564,-1.168,-0.691,0.1,0.2,0.3,-0.396, -0.564,1.168,0.691,0.1,0.2,0.3,0.396, 0.567,0.779,-1.731,0.1,0.2,0.3,-0.889, 0.517,-0.290,0.860,0.1,0.2,0.3,0.817,
+-0.869,1.093,0.898,0, 0.2,0.5,0.8,1
 ].__iter__()
 
 class InitialWeightsGenerator:
@@ -202,6 +202,8 @@ def epoch(net, data):
   cases = list(range(data.cases()))
   random.shuffle(cases)
   
+  trains = data.cases() // 3
+  
   for case in cases:
     net.set_inputs(data.extract_data(case))
     
@@ -212,7 +214,9 @@ def epoch(net, data):
     for i, nr in enumerate(net_result):
       sum_sq += (nr - wanted_result[i]) * (nr - wanted_result[i])
     
-    net.train(wanted_result)
+    if trains > 0:
+      net.train(wanted_result)
+      trains -= 1
     
   return sum_sq / data.cases()
 
@@ -220,7 +224,7 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 4, [3, 2])
+    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 7, [4, 2])
     data = HsvDataExtractor(__file__ + '/../hsv.png')
     logger = ImageLogger(__file__ + '/../hsv.png')
     

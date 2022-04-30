@@ -30,7 +30,7 @@ class HsvDataExtractor(IDataSource):
     # return (*[v/256 for v in self.image[y][x*3:x*3+3]], 1)
     
     x = self.x_cache[case]
-    return [v / 256 for v in self.row_refs[case][x:x+3]] + [1]
+    return [v / 256 for v in self.row_refs[case][x:x+6]] + [1]
   
   def wanted(self, case):
     return [case / 120, 0.7]
