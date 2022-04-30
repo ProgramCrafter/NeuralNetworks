@@ -249,6 +249,7 @@ def main():
     print('\nResults:')
     
     sum_distance = 0
+    sum_error = 0
     d = []
     for case in range(data.cases()):
       net.set_inputs(data.extract_data(case))
@@ -260,10 +261,13 @@ def main():
       for i, nr in enumerate(net_result):
         sum_distance += (nr - wanted_result[i]) ** 2
       
+      sum_error += abs(800 / wanted_result[0] - 800 / net_result[0])
+      
       print('#%3d: %d vs %d' % (case, 800 / wanted_result[0], 800 / net_result[0]), end='\t ')
       if (case + 1) % 4 == 0: print()
     
-    print('\nMedian distance: %.4f' % (sum_distance / data.cases()))
+    print('\nAverage distance: %.4f' % (sum_distance / data.cases()))
+    print('Average error: %.1f' % (sum_error / data.cases()))
     
     print('\nWeights:')
     print(net.sprintf_weights())
