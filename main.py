@@ -13,9 +13,13 @@ from data_source import XORDataSource
 from activators import TanhActivator
 from utils import catch_nan
 
+weights = [1.650,  1.615,
+0.588,0.598,  -2.441,-2.532,
+-2.565,-2.089].__iter__()
+
 class InitialWeightsGenerator:
   def generate(self, iterable):
-    return [random.random() * 2 - 1 for it in iterable]
+    return [(random.random() * 2 - 1) * 0 + weights.__next__() for it in iterable]
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
