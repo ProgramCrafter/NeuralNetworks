@@ -8,6 +8,7 @@ except:
   submissions = []
 
 url_submissions = 'https://codeforces.com/api/problemset.recentStatus?count=999'
+# url_submissions = 'https://codeforces.com/api/user.status?handle=tourist&from=1&count=10000'
 new_submissions = requests.get(url_submissions).json()
 
 if new_submissions['status'] == 'OK':

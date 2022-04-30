@@ -14,9 +14,9 @@ from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = [0.559,  0.253,  0.222,
-    0.882,0.061,-0.118,  0.8,0.7,0.6,  -0.595,-0.552,-0.741,
-    0.030,1,-0.983].__iter__()
+  INIT_WEIGHTS = [0.613,  0.382,  0.781,
+    0.921,-0.063,-0.193,  0.921,0.774,0.990,  -0.538,-0.655,-0.988,
+    -0.558,0.927,-0.901].__iter__()
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -203,6 +203,8 @@ def epoch(net, data):
   cases = list(range(data.cases()))
   random.shuffle(cases)
   
+  train_limit = data.cases() // 4
+  
   for case in cases:
     net.set_inputs(data.extract_data(case))
     
@@ -213,7 +215,9 @@ def epoch(net, data):
     for i, nr in enumerate(net_result):
       sum_sq += (nr - wanted_result[i]) * (nr - wanted_result[i])
     
-    net.train(wanted_result)
+    if train_limit > 0:
+      net.train(wanted_result)
+      train_limit -= 1
     
   return sum_sq / data.cases()
 
