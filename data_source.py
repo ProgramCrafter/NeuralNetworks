@@ -16,12 +16,12 @@ class CFProblemTimingsDataSource(IDataSource):
         lang_const = 1
         
         if 'Python' in lang:
-          lang_const = 0.5
+          lang_const = 0
         elif 'PyPy' in lang or 'Java' in lang:
-          lang_const = 0.8
+          lang_const = 0.5
         
         self.dataset.append(
-          (600 / rating, lang_const, 1 / (time + 1), 1 / (memory / 2**20 + 1))
+          (800 / rating, lang_const, 1 / (time + 1), 1 / (memory / 2**20 + 1))
         )
     
     self.CASES = len(self.dataset)

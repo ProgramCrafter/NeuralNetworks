@@ -4,19 +4,19 @@ import cProfile
 import random
 import math
 
-TRAIN_SPEED = 8e-5
+TRAIN_SPEED = 1e-3
 TRAIN_LIMIT = 20
-TRAIN_BLIMIT = 7e-3
+TRAIN_BLIMIT = 9e-3
 COEF_LIMIT = 9999
 
 from data_source import CFProblemTimingsDataSource
-from activators import TanhActivator
+from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = [0.572,  0.225,  0.116,
-    0.883,0.053,-0.140,  -0.631,-0.509,-0.617,
-    0.144,-0.912].__iter__()
+  INIT_WEIGHTS = [0.559,  0.253,  0.222,
+    0.882,0.061,-0.118,  0.8,0.7,0.6,  -0.595,-0.552,-0.741,
+    0.030,1,-0.983].__iter__()
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -221,7 +221,7 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 3, [2, 1])
+    net = NeuralNetwork(Activator(), InitialWeightsGenerator(), 3, [3, 1])
     data = CFProblemTimingsDataSource(__file__ + '/../cf-submissions.json')
     
     print(net, data)
@@ -256,7 +256,7 @@ def main():
       for i, nr in enumerate(net_result):
         sum_distance += (nr - wanted_result[i]) ** 2
       
-      print('#%3d: %d vs %d' % (case, 600 / wanted_result[0], 600 / net_result[0]), end='\t ')
+      print('#%3d: %d vs %d' % (case, 800 / wanted_result[0], 800 / net_result[0]), end='\t ')
       if (case + 1) % 4 == 0: print()
     
     print('\nMedian distance: %.4f' % (sum_distance / data.cases()))
