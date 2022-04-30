@@ -13,13 +13,9 @@ from data_source import CFProblemTimingsDataSource
 from activators import TanhActivator
 from utils import catch_nan
 
-weights = [15.079,
-3.455,  2.020,
-3.329,1.941].__iter__()
-
 class InitialWeightsGenerator:
   def generate(self, iterable):
-    return [(random.random() * 2 - 1) * 0 + weights.__next__() for it in iterable]
+    return [random.random() * 2 - 1 for it in iterable]
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
@@ -218,7 +214,7 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 1, [2, 1])
+    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 3, [2, 1])
     data = CFProblemTimingsDataSource(__file__ + '/../cf-submissions.json')
     
     print(net, data)
@@ -253,7 +249,7 @@ def main():
       for i, nr in enumerate(net_result):
         sum_distance += (nr - wanted_result[i]) ** 2
       
-      print('#%3d: %d vs %d' % (case, 500 / wanted_result[0], 500 / net_result[0]), end='\t ')
+      print('#%3d: %d vs %d' % (case, 600 / wanted_result[0], 600 / net_result[0]), end='\t ')
       if (case + 1) % 4 == 0: print()
     
     print('\nMedian distance: %.4f' % (sum_distance / data.cases()))

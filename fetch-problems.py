@@ -15,7 +15,12 @@ if new_submissions['status'] == 'OK':
     if submission['verdict'] != 'OK': continue
     if 'rating' not in submission['problem']: continue
     
-    submissions.append([submission['problem']['rating'], submission['timeConsumedMillis']])
+    submissions.append([
+      submission['problem']['rating'],
+      submission['programmingLanguage'],
+      submission['timeConsumedMillis'],
+      submission['memoryConsumedBytes']
+    ])
   
   with open(__file__ + '/../cf-submissions.json', 'w') as f:
     json.dump(submissions, f, indent=2)
