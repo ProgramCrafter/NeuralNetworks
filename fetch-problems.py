@@ -8,11 +8,15 @@ except:
   submissions = []
 
 url_submissions = 'https://codeforces.com/api/problemset.recentStatus?count=999'
-# url_submissions = 'https://codeforces.com/api/user.status?handle=tourist&from=1&count=10000'
+# url_submissions = 'https://codeforces.com/api/user.status?handle=TeaPot&from=1&count=10000'
 new_submissions = requests.get(url_submissions).json()
 
 if new_submissions['status'] == 'OK':
   for submission in new_submissions['result']:
+    if 'verdict' not in submission:
+      print('NO VERDICT IN SUBMISSION', submission)
+      continue
+    
     if submission['verdict'] != 'OK': continue
     if 'rating' not in submission['problem']: continue
     
