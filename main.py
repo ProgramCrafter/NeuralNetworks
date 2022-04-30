@@ -14,8 +14,15 @@ from activators import TanhActivator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
+  INIT_WEIGHTS = [0.572,  0.225,  0.116,
+    0.883,0.053,-0.140,  -0.631,-0.509,-0.617,
+    0.144,-0.912].__iter__()
+  
   def generate(self, iterable):
-    return [random.random() * 2 - 1 for it in iterable]
+    if not self.INIT_WEIGHTS:
+      return [random.random() * 2 - 1 for it in iterable]
+    else:
+      return [random.random() * 0 + self.INIT_WEIGHTS.__next__() for it in iterable]
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
@@ -221,7 +228,7 @@ def main():
     last_distance = epoch(net, data)
     
     try:
-      for i in range(25001):
+      for i in range(250001):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
