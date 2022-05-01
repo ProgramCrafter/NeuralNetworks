@@ -21,7 +21,7 @@ class CFProblemTimingsDataSource(IDataSource):
           lang_const = 0.5
         
         self.dataset.append(
-          (800 / rating, lang_const, 1 / (time + 1), 1 / (memory / 2**20 + 1))
+          (800 / rating, lang_const, 1 / (time + 1), 1 / math.log(memory + 2))
         )
     
     self.CASES = len(self.dataset)

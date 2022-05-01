@@ -7,9 +7,9 @@ import time
 
 import sys
 
-TRAIN_SPEED = 1e-3
+TRAIN_SPEED = 1e-4
 TRAIN_LIMIT = 20
-TRAIN_BLIMIT = 9e-3
+TRAIN_BLIMIT = 9e-4
 COEF_LIMIT = 9999
 
 from data_source import CFProblemTimingsDataSource
@@ -17,9 +17,9 @@ from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = [2.114,  4.791,  7.893,
-    0.363,-2.618,-0.096,  2.179,1.266,4.058,  -1.048,-1.011,-1.199,
-    -3.213,1.817,0.721].__iter__()
+  INIT_WEIGHTS = [2.079,  4.994,  8.051,
+    0.292,-2.679,-0.111,  2.076,1.272,4.135,  -1.096,-1.000,-1.223,
+    -3.253,1.747,0.826].__iter__()
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -237,7 +237,7 @@ def predict_interactive(net):
     elif 'pypy' in lang or 'java' in lang:
       lang_const = 0.5
     
-    net.set_inputs((lang_const, 1 / (time + 1), 1 / (memory / 2**20 + 1)))
+    net.set_inputs((lang_const, 1 / (time + 1), 1 / math.log(memory + 2)))
     print('Task rating: %.2f\n' % (800 / next(net.calculate())))
   except KeyboardInterrupt:
     raise
@@ -267,10 +267,10 @@ def main():
     stt = time.time()
     
     try:
-      for i in range(201):
+      for i in range(10001):
         cur_distance = epoch(net, data)
         
-        if i % 200 == 0:
+        if i % 50 == 0:
           print('Epoch %6d - square distance = %.4f (delta = %.4f)' % (i, cur_distance, cur_distance - last_distance))
           last_distance = min(last_distance, cur_distance)
         
