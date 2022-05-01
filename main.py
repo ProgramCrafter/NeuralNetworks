@@ -5,6 +5,8 @@ import random
 import math
 import time
 
+import sys
+
 TRAIN_SPEED = 1e-3
 TRAIN_LIMIT = 20
 TRAIN_BLIMIT = 9e-3
@@ -222,6 +224,36 @@ def epoch(net, data):
     
   return sum_sq / data.cases()
 
+def predict_interactive(net):
+  try:
+    time = int(input('Time used by solution (ms): '))
+    memory = int(input('Memory used by solution (bytes): '))
+    lang = input('Language of solution: ').lower()
+    
+    lang_const = 1
+    
+    if 'python' in lang:
+      lang_const = 0
+    elif 'pypy' in lang or 'java' in lang:
+      lang_const = 0.5
+    
+    net.set_inputs((lang_const, 1 / (time + 1), 1 / (memory / 2**20 + 1)))
+    print('Task rating: %.2f\n' % (800 / next(net.calculate())))
+  except KeyboardInterrupt:
+    raise
+  except:
+    traceback.print_exc()
+
+def predict_repl():
+  random.seed(0x14609A25)
+  net = NeuralNetwork(Activator(), InitialWeightsGenerator(), 3, [3, 1])
+  
+  while True:
+    try:
+      predict_interactive(net)
+    except KeyboardInterrupt:
+      return
+
 def main():
   try:
     random.seed(0x14609A25)
@@ -285,6 +317,12 @@ def main():
   except:
     traceback.print_exc()
 
-# cProfile.run('main()', sort='time')
-main()
-input()
+if '--predict' in sys.argv:
+  predict_repl()
+elif '--profile' in sys.argv:
+  cProfile.run('main()', sort='time')
+else:
+  main()
+
+if '--no-wait' not in sys.argv:
+  input()
