@@ -232,7 +232,7 @@ def main():
     last_distance = epoch(net, data)
     
     try:
-      for i in range(10001):
+      for i in range(601):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
@@ -274,6 +274,6 @@ def main():
   except:
     traceback.print_exc()
 
-# cProfile.run('main()', sort='time')
-main()
+cProfile.run('main()', sort='time')
+# main()
 input()
