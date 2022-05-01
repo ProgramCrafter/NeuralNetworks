@@ -237,7 +237,7 @@ def predict_interactive(net):
     elif 'pypy' in lang or 'java' in lang:
       lang_const = 0.5
     
-    net.set_inputs((lang_const, 1 / (time + 1), 1 / math.log(memory + 2)))
+    net.set_inputs((lang_const, 1 / (time + 1), math.log(memory + 1) / 21))
     print('Task rating: %.2f\n' % (800 / next(net.calculate())))
   except KeyboardInterrupt:
     raise
