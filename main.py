@@ -256,7 +256,7 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(Activator(), InitialWeightsGenerator(), 3, [3, 1])
+    net = NeuralNetwork(Activator(), InitialWeightsGenerator(), 4, [3, 1])
     data = CFProblemTimingsDataSource(__file__ + '/../cf-submissions.json')
     
     print(net, data)
@@ -272,7 +272,7 @@ def main():
           print('Epoch %6d - square distance = %.4f (delta = %.4f)' % (i, cur_distance, cur_distance - last_distance))
           last_distance = min(last_distance, cur_distance)
         
-        if cur_distance < 0.03825:
+        if cur_distance < 0.0312:
           break
     except KeyboardInterrupt:
       pass

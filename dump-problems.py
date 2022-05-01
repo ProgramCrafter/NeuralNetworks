@@ -10,7 +10,7 @@ def log_row(lang, time, memory, rating):
 
 dataset = CFProblemTimingsDataSource(__file__ + '/../cf-submissions.json')
 for i in range(dataset.cases()):
-  lang, time, memory = dataset.extract_data(i)
+  lang, time, memory, _ = dataset.extract_data(i)
   rating, = dataset.wanted(i)
   
   log_row(lang, time, memory, rating)
