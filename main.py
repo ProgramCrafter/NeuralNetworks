@@ -3,6 +3,7 @@ import itertools
 import cProfile
 import random
 import math
+import time
 
 TRAIN_SPEED = 1e-3
 TRAIN_LIMIT = 20
@@ -14,9 +15,9 @@ from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = [0.613,  0.382,  0.781,
-    0.921,-0.063,-0.193,  0.921,0.774,0.990,  -0.538,-0.655,-0.988,
-    -0.558,0.927,-0.901].__iter__()
+  INIT_WEIGHTS = [2.114,  4.791,  7.893,
+    0.363,-2.618,-0.096,  2.179,1.266,4.058,  -1.048,-1.011,-1.199,
+    -3.213,1.817,0.721].__iter__()
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -231,8 +232,10 @@ def main():
     print(net, data)
     last_distance = epoch(net, data)
     
+    stt = time.time()
+    
     try:
-      for i in range(601):
+      for i in range(201):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
@@ -246,6 +249,8 @@ def main():
     except Exception:
       raise
     
+    ett = time.time()
+    
     print('\nResults:')
     
     sum_distance = 0
@@ -258,22 +263,28 @@ def main():
       wanted_result = data.wanted(case)
       # net_result = wanted_result
       
-      for i, nr in enumerate(net_result):
-        sum_distance += (nr - wanted_result[i]) ** 2
+      for j, nr in enumerate(net_result):
+        sum_distance += (nr - wanted_result[j]) ** 2
       
       sum_error += abs(800 / wanted_result[0] - 800 / net_result[0])
       
-      print('#%3d: %d vs %d' % (case, 800 / wanted_result[0], 800 / net_result[0]), end='\t ')
-      if (case + 1) % 4 == 0: print()
+      if case < 200:
+        print('#%5d: %d vs %d' % (case, 800 / wanted_result[0], 800 / net_result[0]), end='\t ')
+        if (case + 1) % 4 == 0: print()
     
-    print('\nAverage distance: %.4f' % (sum_distance / data.cases()))
-    print('Average error: %.1f' % (sum_error / data.cases()))
+    print('\nCases:  \t\t%d' % data.cases())
+    print('Average distance:\t%.4f' % (sum_distance / data.cases()))
+    print('Average error:  \t%.1f rating' % (sum_error / data.cases()))
+    
+    print('\nEpochs:   \t%d' % (i + 1))
+    print('Used time:   \t%.3fs' % (ett - stt))
+    print('Time per epoch:\t%.3fs' % ((ett - stt) / (i + 1)))
     
     print('\nWeights:')
     print(net.sprintf_weights())
   except:
     traceback.print_exc()
 
-cProfile.run('main()', sort='time')
-# main()
+# cProfile.run('main()', sort='time')
+main()
 input()
