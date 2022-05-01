@@ -7,9 +7,9 @@ import time
 
 import sys
 
-TRAIN_SPEED = 1e-4
+TRAIN_SPEED = 3e-3
 TRAIN_LIMIT = 20
-TRAIN_BLIMIT = 9e-4
+TRAIN_BLIMIT = 9e-3
 COEF_LIMIT = 9999
 
 from data_source import CFProblemTimingsDataSource
@@ -17,9 +17,7 @@ from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = [2.079,  4.994,  8.051,
-    0.292,-2.679,-0.111,  2.076,1.272,4.135,  -1.096,-1.000,-1.223,
-    -3.253,1.747,0.826].__iter__()
+  INIT_WEIGHTS = None
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -274,7 +272,7 @@ def main():
           print('Epoch %6d - square distance = %.4f (delta = %.4f)' % (i, cur_distance, cur_distance - last_distance))
           last_distance = min(last_distance, cur_distance)
         
-        if cur_distance < 0.002:
+        if cur_distance < 0.03825:
           break
     except KeyboardInterrupt:
       pass
