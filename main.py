@@ -322,5 +322,5 @@ elif '--profile' in sys.argv:
 else:
   main()
 
-if '--no-wait' not in sys.argv:
+if '--no-wait' not in sys.argv and __name__ == '__main__':
   input()
