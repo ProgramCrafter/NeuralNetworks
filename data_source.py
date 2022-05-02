@@ -1,5 +1,6 @@
 import math
 import json
+import os
 
 class IDataSource:
   def __init__(self, path):     pass
@@ -11,7 +12,7 @@ class CFProblemTimingsDataSource(IDataSource):
   def __init__(self, path):
     self.dataset = []
     
-    with open(path) as f:
+    with open(os.path.abspath(path)) as f:
       for (rating, lang, time, memory) in json.load(f):
         lang_const = 1
         
