@@ -317,12 +317,13 @@ def main():
   except:
     traceback.print_exc()
 
-if '--predict' in sys.argv:
-  predict_repl()
-elif '--profile' in sys.argv:
-  cProfile.run('main()', sort='time')
-else:
-  main()
-
-if '--no-wait' not in sys.argv and __name__ == '__main__':
-  input()
+if __name__ == '__main__':
+  if '--predict' in sys.argv:
+    predict_repl()
+  elif '--profile' in sys.argv:
+    cProfile.run('main()', sort='time')
+  else:
+    main()
+  
+  if '--no-wait' not in sys.argv:
+    input()
