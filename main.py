@@ -17,7 +17,9 @@ from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = None
+  INIT_WEIGHTS = [0.715,  4.634,  0.812,  0.787,
+-0.539,-0.340,-0.541,-0.031,  -0.215,3.112,-0.301,0.330,  0.037,0.049,1.415,0.701,
+0.284,2.694,0.967].__iter__()
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
