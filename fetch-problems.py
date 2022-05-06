@@ -10,7 +10,8 @@ except:
 
 url_submissions = 'https://codeforces.com/api/contest.status?contestId=%d&from=1&count=10000'
 
-for contest in range(1667, 1665, -1):
+for contest in [1656, 1654, 1648, 1641, 1637, 1630, 1628]:
+  time.sleep(0.4)
   new_submissions = requests.get(url_submissions % contest).json()
   
   if new_submissions['status'] == 'OK':

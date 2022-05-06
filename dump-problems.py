@@ -1,5 +1,7 @@
 from data_source import CFProblemTimingsDataSource
 
+import sys
+
 values_by_columns = [[], [], [], [], []]
 
 def log_row(lang, time, memory, subtime, rating):
@@ -15,7 +17,7 @@ for i in range(dataset.cases()):
   rating, = dataset.wanted(i)
   
   log_row(lang, time, memory, subtime, rating)
-  print('\t%s\t%.3f\t%.3f\t%.3f   ->   %.3f' % (lang, time, memory, subtime, rating))
+  print('\t%s\t%.3f\t%.3f\t%.3f   ->   %.3f' % (lang, time, memory, subtime, rating), file=sys.stderr)
 
 min_by_columns = [min(a) for a in values_by_columns]
 max_by_columns = [max(a) for a in values_by_columns]

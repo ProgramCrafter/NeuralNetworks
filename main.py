@@ -17,7 +17,10 @@ from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = None
+  INIT_WEIGHTS = [-0.241, 0.714, 0.890, 0.680, 0.583, -0.892,
+    0.190, -0.453, 0.020, 1.262, -0.328, -0.564, 0.285, -0.162,
+    0.833, 0.443, 1.232, 1.246, -0.221, -0.066, 0.324, -0.725, 
+    0.558, 0.627, -0.556, 1.129, 0.051, 1.295, -1.538].__iter__()
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -319,7 +322,10 @@ def main():
     
     print('\nWeights:')
     print(net.sprintf_weights())
-    print('\n', list(net.enum_weights()))
+    print()
+    print(list(net.enum_weights()))
+    print()
+    print([int(w * 1000) / 1000 for w in net.enum_weights()])
   except:
     traceback.print_exc()
 
