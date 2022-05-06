@@ -13,7 +13,7 @@ class CFProblemTimingsDataSource(IDataSource):
     self.dataset = []
     
     with open(os.path.abspath(path)) as f:
-      for (rating, lang, time, memory) in json.load(f):
+      for (rating, lang, time, memory, subtime) in json.load(f):
         lang_const = 1
         
         if 'Python' in lang:
@@ -22,7 +22,7 @@ class CFProblemTimingsDataSource(IDataSource):
           lang_const = 0.5
         
         self.dataset.append(
-          (800 / rating, lang_const, 1 / (time + 1), math.log(memory + 1) / 21, 1)
+          (800 / rating, lang_const, 1 / (time + 1), math.log(memory + 1) / 21, subtime / 18000, 1)
         )
     
     self.CASES = len(self.dataset)

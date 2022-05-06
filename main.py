@@ -7,9 +7,9 @@ import time
 
 import sys
 
-TRAIN_SPEED = 3e-3
+TRAIN_SPEED = 3e-4
 TRAIN_LIMIT = 20
-TRAIN_BLIMIT = 9e-3
+TRAIN_BLIMIT = 5e-4
 COEF_LIMIT = 9999
 
 from data_source import CFProblemTimingsDataSource
@@ -17,9 +17,7 @@ from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = [0.715,  4.634,  0.812,  0.787,
--0.539,-0.340,-0.541,-0.031,  -0.215,3.112,-0.301,0.330,  0.037,0.049,1.415,0.701,
-0.284,2.694,0.967].__iter__()
+  INIT_WEIGHTS = None
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -36,6 +34,7 @@ class InputValue(INeuron):
   def __init__(self, activator, initializer, previous_layer):
     self.activator = activator
     self.coef = initializer.generate(' ')[0]
+    self.coefs = [self.coef]
     self.value = 0
     self.cache = None
   
@@ -82,6 +81,7 @@ class InputValue(INeuron):
     if k < -COEF_LIMIT: k = -COEF_LIMIT
     elif k > COEF_LIMIT: k = COEF_LIMIT
     self.coef = k
+    self.coefs = [k]
     
     return a
   
@@ -199,6 +199,11 @@ class NeuralNetwork:
     
     for layer in self.layers[:-1][::-1]:
       deltas = [neuron.delta(deltas, i) for i, neuron in enumerate(layer)]
+  
+  def enum_weights(self):
+    for layer in self.layers:
+      for neuron in layer:
+        yield from neuron.coefs
 
 def epoch(net, data):
   sum_sq = 0
@@ -246,7 +251,7 @@ def predict_interactive(net):
 
 def predict_repl():
   random.seed(0x14609A25)
-  net = NeuralNetwork(Activator(), InitialWeightsGenerator(), 3, [3, 1])
+  net = NeuralNetwork(Activator(), InitialWeightsGenerator(), 5, [4, 1])
   
   while True:
     try:
@@ -258,7 +263,7 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(Activator(), InitialWeightsGenerator(), 4, [3, 1])
+    net = NeuralNetwork(Activator(), InitialWeightsGenerator(), 5, [4, 1])
     data = CFProblemTimingsDataSource(__file__ + '/../cf-submissions.json')
     
     print(net, data)
@@ -270,11 +275,11 @@ def main():
       for i in range(10001):
         cur_distance = epoch(net, data)
         
-        if i % 50 == 0:
+        if i % 30 == 0:
           print('Epoch %6d - square distance = %.4f (delta = %.4f)' % (i, cur_distance, cur_distance - last_distance))
           last_distance = min(last_distance, cur_distance)
         
-        if cur_distance < 0.0312:
+        if cur_distance < 0.02:
           break
     except KeyboardInterrupt:
       pass
@@ -314,6 +319,7 @@ def main():
     
     print('\nWeights:')
     print(net.sprintf_weights())
+    print('\n', list(net.enum_weights()))
   except:
     traceback.print_exc()
 
