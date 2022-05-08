@@ -17,10 +17,10 @@ from activators import TanhActivator as Activator
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = [-0.559, 1.442, 1.121, 1.513, 0.7, -0.589,
-    0.471, -0.95, 0.355, 1.396, -0.335, -0.569, 0.287, -0.176,
-    0.825, 0.235, 1.42, 2.031, -0.129, -0.124, 0.367, -1.122,
-    0.756, 1.132, -0.439, 1.456, -0.134, 1.791, -1.893].__iter__()
+  INIT_WEIGHTS = [-0.573, 1.525, 1.116, 1.608, 0.708, -0.558,
+    0.491, -0.977, 0.375, 1.405, -0.338, -0.57, 0.287, -0.178,
+    0.821, 0.233, 1.441, 2.045, -0.111, -0.098, 0.368, -1.158,
+    0.786, 1.184, -0.44, 1.492, -0.141, 1.807, -1.93].__iter__()
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -210,6 +210,7 @@ class NeuralNetwork:
 
 def epoch(net, data):
   sum_sq = 0
+  sum_ab = 0
   
   cases = list(range(data.cases()))
   random.shuffle(cases)
@@ -225,12 +226,13 @@ def epoch(net, data):
     
     for i, nr in enumerate(net_result):
       sum_sq += (nr - wanted_result[i]) * (nr - wanted_result[i])
+      sum_ab += abs(800 / nr - 800 / wanted_result[i])
     
     if train_limit > 0:
       net.train(wanted_result)
       train_limit -= 1
     
-  return sum_sq / data.cases()
+  return sum_sq / data.cases(), sum_ab / data.cases()
 
 def predict_interactive(net):
   try:
@@ -270,16 +272,17 @@ def main():
     data = CFProblemTimingsDataSource(__file__ + '/../cf-submissions.json')
     
     print(net, data)
-    last_distance = epoch(net, data)
+    last_distance, _ = epoch(net, data)
     
     stt = time.time()
     
     try:
       for i in range(10001):
-        cur_distance = epoch(net, data)
+        cur_distance, abs_distance = epoch(net, data)
         
         if i % 30 == 0:
-          print('Epoch %6d - square distance = %.4f (delta = %.4f)' % (i, cur_distance, cur_distance - last_distance))
+          print('Epoch %6d - square distance = %.4f (delta = %.4f) - abs distance = %.4f' %
+            (i, cur_distance, cur_distance - last_distance, abs_distance))
           last_distance = min(last_distance, cur_distance)
         
         if cur_distance < 0.02:
