@@ -10,7 +10,9 @@ except:
 
 url_submissions = 'https://codeforces.com/api/contest.status?contestId=%d&from=1&count=10000'
 
-for contest in [1656, 1654, 1648, 1641, 1637, 1630, 1628]:
+added_submissions = 0
+
+for contest in [1677, 1678, 1556, 1558, 1560, 1548, 1552]:
   time.sleep(0.4)
   new_submissions = requests.get(url_submissions % contest).json()
   
@@ -32,8 +34,11 @@ for contest in [1656, 1654, 1648, 1641, 1637, 1630, 1628]:
         submission['memoryConsumedBytes'],
         submission['relativeTimeSeconds']
       ])
+      added_submissions += 1
     
     with open(__file__ + '/../cf-submissions.json', 'w') as f:
       json.dump(submissions, f, indent=2)
   else:
     print(new_submissions)
+
+print(added_submissions)
