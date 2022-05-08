@@ -12,8 +12,8 @@ url_submissions = 'https://codeforces.com/api/contest.status?contestId=%d&from=1
 
 added_submissions = 0
 
-for contest in [1677, 1678, 1556, 1558, 1560, 1548, 1552]:
-  time.sleep(0.4)
+for contest in [1560, 1551, 1547, 1538, 1520, 1512, 1506]:
+  time.sleep(0.25)
   new_submissions = requests.get(url_submissions % contest).json()
   
   if new_submissions['status'] == 'OK':
