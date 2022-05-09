@@ -33,7 +33,8 @@ class HsvDataExtractor(IDataSource):
     return self._extract_pixel(case) + self._extract_pixel(self.next_cases[case]) + [1]
   
   def wanted(self, case):
-    return [abs(case - self.next_cases[case]) / self.cases()]
+    v = abs(case - self.next_cases[case]) / self.cases()
+    return [min(v, 1.0 - v)]
   
   def cases(self):
     return 120
