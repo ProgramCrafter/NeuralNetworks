@@ -2,39 +2,28 @@ import random
 import math
 import png
 
+def flat(arr):
+  for v in arr:
+    yield from v
+
 class IDataSource:
   def __init__(self, path):     pass
   def extract_data(self, case): pass
   def wanted(self, case):       pass
   def cases(self):              pass
 
-class HsvDataExtractor(IDataSource):
-  def __init__(self, path):
-    mtx = png.Reader(path).read()[2]
-    self.image = [list(row) for row in mtx]
-    
-    random.seed(0x14609A25)
-    self.next_cases = list(range(self.cases()))
-    random.shuffle(self.next_cases)
-    
-    k = 0.7
-    self.angles = [case * (360 // self.cases()) * math.pi / 180
-      for case in range(self.cases())]
-    self.row_refs = [self.image[int(256 * (math.sin(-angle) * k + 1))]
-      for angle in self.angles]
-    self.x_cache = [int(256 * (math.cos(-angle) * k + 1)) * 3
-      for angle in self.angles]
-  
-  def _extract_pixel(self, case):
-    x = self.x_cache[case]
-    return [v / 256 for v in self.row_refs[case][x:x+3]]
+class IconDataExtractor(IDataSource):
+  def __init__(self, prefix, paths):
+    self.images = [
+      list(flat(png.Reader(prefix + path).read()[2])) for path in paths
+    ]
   
   def extract_data(self, case):
-    return self._extract_pixel(case) + self._extract_pixel(self.next_cases[case]) + [1]
+    return [v / 256 for v in self.images[case]]
   
   def wanted(self, case):
-    v = abs(case - self.next_cases[case]) / self.cases()
-    return [min(v, 1.0 - v)]
+    values = [0, 1, 0]
+    return [values[case]]
   
   def cases(self):
-    return 120
+    return 3

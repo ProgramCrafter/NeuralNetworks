@@ -9,13 +9,12 @@ TRAIN_LIMIT = 20
 TRAIN_BLIMIT = 7e-3
 COEF_LIMIT = 9999
 
-from data_source import HsvDataExtractor
+from data_source import IconDataExtractor
 from activators import TanhActivator
-from image_logger import ImageLogger
 from utils import catch_nan
 
 class InitialWeightsGenerator:
-  INIT_WEIGHTS = [-0.032, -0.468, 1.666, 0.409, 1.041, 1.158, 1.012, -0.102, -0.953, 0.1, -0.009, -0.852, 1.214, -0.622, 0.053, 0.98, 0.891, 0.541, 0.708, 0.055, 0.927, 0.256, -0.056, -1.763, -0.298, -0.531, 0.846, -0.937, -0.05, -1.026, 0.457, 0.328, -0.726, 0.301, 0.68, -0.948, 0.378, 0.795, 0.943].__iter__()
+  INIT_WEIGHTS = None
   
   def generate(self, iterable):
     if not self.INIT_WEIGHTS:
@@ -35,15 +34,13 @@ class InputValue(INeuron):
     self.value = 0
     self.cache = None
     self.coefs = [self.coef]
+    self.next_layer = []
   
   @catch_nan
   def calculate(self):
     if not self.cache:
       self.cache = self.activator.result(self.value)
     return self.cache
-  
-  def sprintf_weights(self):
-    return ('%.3f' % self.coef).ljust(16) # + ' (% 8.3f)' % self.calculate()
   
   @catch_nan
   def delta_as_last(self, error):
@@ -53,20 +50,20 @@ class InputValue(INeuron):
     return d * error
   
   @catch_nan
-  def delta_as_not_last(self, next_deltas, self_index):
+  def delta_as_not_last(self, next_deltas):
     s = self.coef * self.value
     d = self.activator.derivative(s)
     
     mult = 0
     for i, neuron in enumerate(self.next_layer):
-      mult += neuron.coefs[self_index] * next_deltas[i]
+      mult += neuron[0].coefs[neuron[1]] * next_deltas[i]
     
     return d * mult
   
   @catch_nan
-  def delta(self, next_deltas, self_index):
+  def delta(self, next_deltas):
     if self.next_layer:
-      a = self.delta_as_not_last(next_deltas, self_index)
+      a = self.delta_as_not_last(next_deltas)
     else:
       a = self.delta_as_last(next_deltas)
     
@@ -80,19 +77,20 @@ class InputValue(INeuron):
     elif k > COEF_LIMIT: k = COEF_LIMIT
     self.coef = k
     self.coefs = [k]
+    self.cache = None
     
     return a
-  
-  def uncache(self):
-    self.cache = None
 
 class Neuron(INeuron):
   def __init__(self, activator, initializer, previous_layer):
     self.activator = activator
     self.previous_layer = previous_layer
-    self.next_layer = None
+    self.next_layer = []
     self.coefs = initializer.generate(previous_layer)
     self.cache = None
+    
+    for i,p in enumerate(self.previous_layer):
+      p.next_layer.append((self, i))
   
   @catch_nan
   def calculate(self):
@@ -111,21 +109,21 @@ class Neuron(INeuron):
     return d * error
   
   @catch_nan
-  def delta_as_not_last(self, next_deltas, self_index):
+  def delta_as_not_last(self, next_deltas):
     s = sum(self.coefs[i] * v.calculate() for i, v in enumerate(self.previous_layer))
     
     d = self.activator.derivative(s)
     
     mult = 0
     for i, neuron in enumerate(self.next_layer):
-      mult += neuron.coefs[self_index] * next_deltas[i]
+      mult += neuron[0].coefs[neuron[1]] * next_deltas[i]
     
     return d * mult
   
   @catch_nan
-  def delta(self, next_deltas, self_index):
+  def delta(self, next_deltas):
     if self.next_layer:
-      a = self.delta_as_not_last(next_deltas, self_index)
+      a = self.delta_as_not_last(next_deltas)
     else:
       a = self.delta_as_last(next_deltas)
     
@@ -143,25 +141,29 @@ class Neuron(INeuron):
     self.cache = None
     
     return a
-  
-  def sprintf_weights(self):
-    return ','.join('%.3f' % v for v in self.coefs)#.ljust(26) #+ ' (% 8.3f)' % self.calculate()
-  
-  def uncache(self):
-    self.cache = None
-    
-    for neuron in self.previous_layer: neuron.uncache()
 
-class NeuralNetwork:
-  def __init__(self, activator, initializer, inputs, layer_sizes):
-    self.layers = [[InputValue(activator, initializer, None) for i in range(inputs)]]
-    
+class SparelinkNeuralNetwork:
+  def __init__(self, activator, initializer, levels):
     self.activator_prefix = str(activator)
     
-    for size in layer_sizes:
-      self.layers.append([Neuron(activator, initializer, self.layers[-1]) for i in range(size)])
-      for neuron in self.layers[-2]:
-        neuron.next_layer = self.layers[-1]
+    self.layers = [[InputValue(activator, initializer, None) for i in range(4 ** levels * 3)]]
+    
+    # first layer (4 ** levels == 256) - neurons with 3 inputs (R, G, B)
+    self.layers.append(
+      [Neuron(activator, initializer, self.layers[0][i*3:i*3+3]) for i in range(4 ** levels)]
+    )
+    
+    # second layer (4 ** 3 == 64)
+    # third layer  (4 ** 2 == 16)
+    # fourth layer (4 ** 1 == 4)
+    # final layer  (4 ** 0 == 1)
+    for i in range(levels)[::-1]:
+      last_layer = self.layers[-1]
+      size = 4 ** i
+      
+      self.layers.append([Neuron(activator, initializer, [
+        last_layer[k], last_layer[k + size], last_layer[k + 2 * size], last_layer[k + 3 * size]
+      ]) for k in range(size)])
     
   def set_inputs(self, input_values):
     for i, neuron in enumerate(self.layers[0]):
@@ -170,20 +172,10 @@ class NeuralNetwork:
     for layer in self.layers:
       for neuron in layer:
         neuron.cache = None
-    
-    # for neuron in self.layers[-1]:
-    #   neuron.uncache()
   
   def calculate(self):
     for neuron in self.layers[-1]:
       yield neuron.calculate()
-  
-  def sprintf_weights(self):
-    return self.activator_prefix + '\n'.join( # layers
-      ' | '.join(
-        neuron.sprintf_weights()
-      for neuron in layer)
-    for layer in self.layers)
   
   def train(self, wanted):
     # back errors propagation
@@ -191,12 +183,12 @@ class NeuralNetwork:
     
     # output layer
     deltas = [
-      neuron.delta(output[i] - wanted[i], i)
+      neuron.delta(output[i] - wanted[i])
           for i, neuron in enumerate(self.layers[-1])
     ]
     
     for layer in self.layers[:-1][::-1]:
-      deltas = [neuron.delta(deltas, i) for i, neuron in enumerate(layer)]
+      deltas = [neuron.delta(deltas) for neuron in layer]
   
   def enum_weights(self):
     for layer in self.layers:
@@ -209,14 +201,13 @@ def epoch(net, data):
   cases = list(range(data.cases()))
   random.shuffle(cases)
   
-  trains = data.cases() // 3
+  trains = data.cases() // 1
   
   for case in cases:
     net.set_inputs(data.extract_data(case))
     
     net_result = net.calculate()
     wanted_result = data.wanted(case)
-    # net_result = wanted_result
     
     for i, nr in enumerate(net_result):
       sum_sq += (nr - wanted_result[i]) * (nr - wanted_result[i])
@@ -231,15 +222,15 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 7, [4, 1])
-    data = HsvDataExtractor(__file__ + '/../hsv.png')
-    logger = ImageLogger(__file__ + '/../hsv.png')
+    net = SparelinkNeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 4)
+    data = IconDataExtractor(__file__ + '/../icons/r-',
+      ['oo-0-0.png', 'tg-0-0.png', 'ya-0-0.png'])
     
     print(net, data)
     last_distance = epoch(net, data)
     
     try:
-      for i in range(10001):
+      for i in range(100001):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
@@ -256,41 +247,24 @@ def main():
     print('\nResults:')
     
     sum_distance = 0
-    sum_angle = 0
-    d = []
+    sum_abs = 0
+    
     for case in range(data.cases()):
       net.set_inputs(data.extract_data(case))
       
       net_result = list(net.calculate())
       wanted_result = data.wanted(case)
-      # net_result = wanted_result
+      
+      print('Net output = %.4f; wanted = %d' % (net_result[0], wanted_result[0]))
       
       for i, nr in enumerate(net_result):
-        sum_distance += (nr - wanted_result[i]) ** 2
-      
-      logger.add_mark(net_result[0] * 2 * math.pi, (case * 256) // data.cases())
-      sum_angle += abs(net_result[0] - wanted_result[0])
-      
-      wr = wanted_result[0] * 360
-      nr = net_result[0] * 360
-      d.append(int(abs(wr - nr)))
-      print('%d:%d (%d)' % (wr, nr, abs(wr - nr)), end='\t')
-      if (case + 1) % 7 == 0: print()
+        sum_distance += (nr - wanted_result[i]) * (nr - wanted_result[i])
+        sum_abs += abs(nr - wanted_result[i])
     
-    d.sort()
-    print('\n\nDistances array:')
-    for chunk in range(0, len(d), 30): print(*d[chunk:chunk+30])
-    
-    logger.save(__file__ + '/../nn-output.png')
-    
-    print('\nMedian distance: %.4f' % (sum_distance / data.cases()))
-    print('Median angle: %.4f' % (sum_angle / data.cases() * 360))
+    print('\nMedian square error: %.4f' % (sum_distance / data.cases()))
+    print('Median absolute error: %.4f' % (sum_abs / data.cases()))
     
     print('\nWeights:')
-    print(net.sprintf_weights())
-    print()
-    print(list(net.enum_weights()))
-    print()
     print([int(w * 1000) / 1000 for w in net.enum_weights()])
   except:
     traceback.print_exc()
