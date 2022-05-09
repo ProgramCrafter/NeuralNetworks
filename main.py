@@ -14,14 +14,17 @@ from activators import TanhActivator
 from image_logger import ImageLogger
 from utils import catch_nan
 
-weights = [0.586, -0.246, 1.466, 0.1, 0.2, 0.3, 0.744,
-0.564,-1.168,-0.691,0.1,0.2,0.3,-0.396, -0.564,1.168,0.691,0.1,0.2,0.3,0.396, 0.567,0.779,-1.731,0.1,0.2,0.3,-0.889, 0.517,-0.290,0.860,0.1,0.2,0.3,0.817,
--0.869,1.093,0.898,0, 0.2,0.5,0.8,1
-].__iter__()
-
 class InitialWeightsGenerator:
+  INIT_WEIGHTS = [0.586, -0.246, 1.466, 0.1, 0.2, 0.3, 0.744,
+    0.564,-1.168,-0.691,0.1,0.2,0.3,-0.396, -0.564,1.168,0.691,0.1,0.2,0.3,0.396, 0.567,0.779,-1.731,0.1,0.2,0.3,-0.889, 0.517,-0.290,0.860,0.1,0.2,0.3,0.817,
+    -0.869,1.093,0.898,0
+    ].__iter__()
+  
   def generate(self, iterable):
-    return [(random.random() * 2 - 1) * 0 + weights.__next__() for it in iterable]
+    if not self.INIT_WEIGHTS:
+      return [random.random() * 2 - 1 for it in iterable]
+    else:
+      return [random.random() * 0 + self.INIT_WEIGHTS.__next__() for it in iterable]
 
 class INeuron:
   def __init__(self, activator, initializer, previous_layer): pass
@@ -34,6 +37,7 @@ class InputValue(INeuron):
     self.coef = initializer.generate(' ')[0]
     self.value = 0
     self.cache = None
+    self.coefs = [self.coef]
   
   @catch_nan
   def calculate(self):
@@ -78,6 +82,7 @@ class InputValue(INeuron):
     if k < -COEF_LIMIT: k = -COEF_LIMIT
     elif k > COEF_LIMIT: k = COEF_LIMIT
     self.coef = k
+    self.coefs = [k]
     
     return a
   
@@ -195,6 +200,11 @@ class NeuralNetwork:
     
     for layer in self.layers[:-1][::-1]:
       deltas = [neuron.delta(deltas, i) for i, neuron in enumerate(layer)]
+  
+  def enum_weights(self):
+    for layer in self.layers:
+      for neuron in layer:
+        yield from neuron.coefs
 
 def epoch(net, data):
   sum_sq = 0
@@ -224,7 +234,7 @@ def main():
   try:
     random.seed(0x14609A25)
     
-    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 7, [4, 2])
+    net = NeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 7, [4, 1])
     data = HsvDataExtractor(__file__ + '/../hsv.png')
     logger = ImageLogger(__file__ + '/../hsv.png')
     
@@ -281,6 +291,10 @@ def main():
     
     print('\nWeights:')
     print(net.sprintf_weights())
+    print()
+    print(list(net.enum_weights()))
+    print()
+    print([int(w * 1000) / 1000 for w in net.enum_weights()])
   except:
     traceback.print_exc()
 
