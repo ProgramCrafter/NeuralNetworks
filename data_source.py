@@ -22,7 +22,8 @@ class IconDataExtractor(IDataSource):
     return [v / 256 for v in self.images[case]]
   
   def wanted(self, case):
-    values = [0, 1, 1, 0, 0, 0] * 4
+    k = len(self.images)
+    values = [0] * 4 + [1] * 8 + [0] * (k - 12)
     return [values[case]]
   
   def cases(self):

@@ -231,12 +231,12 @@ def main():
     random.seed(0x14609A25)
     
     net = SparelinkNeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 4)
-    data = IconDataExtractor(__file__ + '/../icons/',
-      ['r-oo-0-0.png',   'd-tg-0-0.png',   'r-tg-0-0.png',   'r-ya-0-0.png',   'd-cc-0-0.png',   'r-ds-0-0.png',
-       'r-oo-90-0.png',  'd-tg-90-0.png',  'r-tg-90-0.png',  'r-ya-90-0.png',  'd-cc-90-0.png',  'r-ds-90-0.png',
-       'r-oo-180-0.png', 'd-tg-180-0.png', 'r-tg-180-0.png', 'r-ya-180-0.png', 'd-cc-180-0.png', 'r-ds-180-0.png',
-       'r-oo-270-0.png', 'd-tg-270-0.png', 'r-tg-270-0.png', 'r-ya-270-0.png', 'd-cc-270-0.png', 'r-ds-270-0.png',
-      ])
+    
+    icons = []
+    for icon_name in 'r-oo,d-tg,r-tg,r-ya,d-cc,r-ds,d-oc,d-ha'.split(','):
+      icons.extend(icon_name + v for v in '-0-0.png -90-0.png -180-0.png -270-0.png'.split())
+    
+    data = IconDataExtractor(__file__ + '/../icons/', icons)
     
     print(net, data)
     last_distance = epoch(net, data)
@@ -267,7 +267,8 @@ def main():
       net_result = list(net.calculate())
       wanted_result = data.wanted(case)
       
-      print('Net output = %.4f (%d); wanted = %d' % (net_result[0], int(net_result[0] + 0.5), wanted_result[0]))
+      print('Net output = %.4f (%d);\twanted = %d;\t%s' %
+        (net_result[0], int(net_result[0] + 0.5), wanted_result[0], icons[case]))
       
       for i, nr in enumerate(net_result):
         sum_distance += (nr - wanted_result[i]) * (nr - wanted_result[i])
