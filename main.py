@@ -209,7 +209,7 @@ def epoch(net, data):
   cases = list(range(data.cases()))
   random.shuffle(cases)
   
-  trains = data.cases() // 2
+  trains = data.cases() // 3
   
   for case in cases:
     net.set_inputs(data.extract_data(case))
@@ -232,10 +232,10 @@ def main():
     
     net = SparelinkNeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 4)
     data = IconDataExtractor(__file__ + '/../icons/',
-      ['r-oo-0-0.png',   'd-tg-0-0.png',   'r-tg-0-0.png',   'r-ya-0-0.png',   'd-cc-0-0.png',
-       'r-oo-90-0.png',  'd-tg-90-0.png',  'r-tg-90-0.png',  'r-ya-90-0.png',  'd-cc-90-0.png',
-       'r-oo-180-0.png', 'd-tg-180-0.png', 'r-tg-180-0.png', 'r-ya-180-0.png', 'd-cc-180-0.png',
-       'r-oo-270-0.png', 'd-tg-270-0.png', 'r-tg-270-0.png', 'r-ya-270-0.png', 'd-cc-270-0.png',
+      ['r-oo-0-0.png',   'd-tg-0-0.png',   'r-tg-0-0.png',   'r-ya-0-0.png',   'd-cc-0-0.png',   'r-ds-0-0.png',
+       'r-oo-90-0.png',  'd-tg-90-0.png',  'r-tg-90-0.png',  'r-ya-90-0.png',  'd-cc-90-0.png',  'r-ds-90-0.png',
+       'r-oo-180-0.png', 'd-tg-180-0.png', 'r-tg-180-0.png', 'r-ya-180-0.png', 'd-cc-180-0.png', 'r-ds-180-0.png',
+       'r-oo-270-0.png', 'd-tg-270-0.png', 'r-tg-270-0.png', 'r-ya-270-0.png', 'd-cc-270-0.png', 'r-ds-270-0.png',
       ])
     
     print(net, data)
