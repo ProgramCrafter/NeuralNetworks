@@ -232,17 +232,17 @@ def main():
     
     net = SparelinkNeuralNetwork(TanhActivator(), InitialWeightsGenerator(), 4)
     data = IconDataExtractor(__file__ + '/../icons/',
-      ['r-oo-0-0.png',   'd-tg-0-0.png',   'r-tg-0-0.png',   'r-ya-0-0.png',
-       'r-oo-90-0.png',  'd-tg-90-0.png',  'r-tg-90-0.png',  'r-ya-90-0.png',
-       'r-oo-180-0.png', 'd-tg-180-0.png', 'r-tg-180-0.png', 'r-ya-180-0.png',
-       'r-oo-270-0.png', 'd-tg-270-0.png', 'r-tg-270-0.png', 'r-ya-270-0.png',
+      ['r-oo-0-0.png',   'd-tg-0-0.png',   'r-tg-0-0.png',   'r-ya-0-0.png',   'd-cc-0-0.png',
+       'r-oo-90-0.png',  'd-tg-90-0.png',  'r-tg-90-0.png',  'r-ya-90-0.png',  'd-cc-90-0.png',
+       'r-oo-180-0.png', 'd-tg-180-0.png', 'r-tg-180-0.png', 'r-ya-180-0.png', 'd-cc-180-0.png',
+       'r-oo-270-0.png', 'd-tg-270-0.png', 'r-tg-270-0.png', 'r-ya-270-0.png', 'd-cc-270-0.png',
       ])
     
     print(net, data)
     last_distance = epoch(net, data)
     
     try:
-      for i in range(1):
+      for i in range(10001):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
