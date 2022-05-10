@@ -26,4 +26,4 @@ class IconDataExtractor(IDataSource):
     return [values[case]]
   
   def cases(self):
-    return 12
+    return 16
