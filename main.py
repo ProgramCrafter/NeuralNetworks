@@ -3,6 +3,7 @@ import itertools
 import random
 import math
 import json
+import time
 
 TRAIN_SPEED = 3e-4
 TRAIN_LIMIT = 20
@@ -240,13 +241,15 @@ def main():
     
     print(net, data)
     last_distance = epoch(net, data)
+    last_time = time.time()
     
     try:
-      for i in range(10001):
+      for i in range(1, 10001):
         cur_distance = epoch(net, data)
         
         if i % 200 == 0:
           print('Epoch %6d - square distance = %.4f (delta = %.4f)' % (i, cur_distance, cur_distance - last_distance))
+          print('  average epoch time: %.4f' % ((time.time() - last_time) / i))
           last_distance = min(last_distance, cur_distance)
         
         if cur_distance < 0.005:
